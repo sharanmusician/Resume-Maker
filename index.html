@@ -3,335 +3,188 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aethercore | Prime Resume Designer</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@300;600;800&family=Playfair+Display:wght@700&family=Source+Sans+Pro:wght@300;400;600&display=swap" rel="stylesheet">
-    
+    <title>Aethercore | Resume Studio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Playfair+Display:wght@700&family=League+Spartan:wght@700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <style>
         :root {
-            --accent: #2d3475; /* Aethercore Midnight Blue */
-            --gradient: linear-gradient(135deg, #2d3475 0%, #10132e 100%);
-            --white: #ffffff;
-            --black: #000000;
-            --text-main: #333333;
-            --text-muted: #888888;
-            --pill-bg: #f0f0f5;
+            --bg: #f4f4f9;
+            --accent: #000;
+            --sidebar-width: 280px;
         }
 
-        body {
-            font-family: 'Source Sans Pro', sans-serif;
-            background-color: #e2e2e8;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: var(--text-main);
-            -webkit-font-smoothing: antialiased;
+        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; overflow-x: hidden; }
+
+        /* --- DASHBOARD VIEW --- */
+        .dashboard { padding: 40px; text-align: center; display: block; }
+        .dashboard h1 { font-weight: 800; letter-spacing: -1px; margin-bottom: 40px; }
+        
+        .template-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+            gap: 30px; 
+            max-width: 1200px; 
+            margin: 0 auto; 
         }
 
-        /* --- Global Editor Toolbar --- */
-        .toolbar {
-            width: 100%;
-            padding: 15px 40px;
-            background: rgba(255, 255, 255, 0.98);
-            backdrop-filter: blur(8px);
-            border-bottom: 1px solid #d1d1d6;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            box-sizing: border-box;
-        }
-
-        .brand { font-family: 'League Spartan', sans-serif; font-weight: 800; font-size: 1.4rem; color: var(--black); }
-        .brand span { font-weight: 300; font-size: 0.75rem; color: #aaa; text-transform: uppercase; letter-spacing: 2px; margin-left: 10px;}
-
-        .btn-export { 
-            padding: 12px 28px;
-            border: none;
-            background: var(--black); 
-            color: var(--white); 
+        .template-card { 
+            background: #fff; 
+            padding: 10px; 
+            border-radius: 8px; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
             cursor: pointer;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            border-radius: 4px;
-            transition: all 0.2s ease;
+            transition: transform 0.3s ease;
+            border: 2px solid transparent;
         }
-        .btn-export:hover { background: #333; transform: translateY(-1px); }
+        .template-card:hover { transform: translateY(-10px); border-color: var(--accent); }
+        .template-card img { width: 100%; border-radius: 4px; display: block; background: #eee; }
+        .template-card p { margin-top: 15px; font-weight: 600; font-size: 14px; }
 
-        /* --- Resume Canvas --- */
-        #resume-container {
-            margin: 50px 0;
-            display: flex;
-            justify-content: center;
-        }
-
-        #resume-paper {
-            width: 210mm;
-            min-height: 297mm;
-            background: var(--white);
-            box-shadow: 0 40px 100px rgba(0,0,0,0.18);
-            box-sizing: border-box;
-            display: flex; /* Sidebar layout */
-            overflow: hidden; /* For gradient flow and image masks */
-            position: relative;
-        }
-
-        /* Inline Editor Hover/Focus States */
-        [contenteditable="true"] {
-            outline: none;
-            transition: background 0.1s ease;
-            border-radius: 2px;
-        }
-        [contenteditable="true"]:hover { background: rgba(0,0,0,0.03); }
-        [contenteditable="true"]:focus { background: rgba(0,0,0,0.05); }
-
-        /* ==============================
-           THE SIDELINE TEMPLATE
-           ============================== */
+        /* --- EDITOR VIEW --- */
+        .editor-view { display: none; flex-direction: column; align-items: center; }
         
-        /* --- Sidebar (Poster Gradient) --- */
-        .sidebar {
-            width: 32%;
-            background: var(--gradient);
-            padding: 60px 40px;
-            color: var(--white);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+        .toolbar { 
+            width: 100%; padding: 15px 40px; background: #fff; border-bottom: 1px solid #ddd;
+            display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100;
             box-sizing: border-box;
         }
 
-        /* Mobile-Friendly Circular Image Mask (Same crop) */
-        .image-picker-container {
-            width: 140px;
-            height: 140px;
-            margin-bottom: 40px;
-            position: relative;
-            cursor: pointer;
+        .btn { padding: 10px 20px; border: none; cursor: pointer; font-weight: 600; font-size: 12px; border-radius: 5px; }
+        .btn-back { background: #eee; }
+        .btn-save { background: #000; color: #fff; }
+
+        #resume-paper { 
+            width: 210mm; min-height: 297mm; background: #fff; margin: 40px 0; 
+            box-shadow: 0 0 50px rgba(0,0,0,0.1); box-sizing: border-box; display: flex;
         }
 
-        #profile-mask {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            background-image: url('https://via.placeholder.com/150'); /* Default */
-            background-size: cover; /* Auto-crop and center */
-            background-position: center;
-            background-repeat: no-repeat;
-            border: 4px solid rgba(255,255,255,0.2);
-            transition: border-color 0.2s ease;
+        /* Common Editable Logic */
+        [contenteditable="true"]:focus { background: #fffde7; outline: 2px solid #000; padding: 2px; }
+
+        /* --- TEMPLATE STYLES --- */
+        /* Template 1: Modernist (Sidebar) */
+        .tp-modernist .sidebar { width: 35%; background: #1a1a2e; color: #fff; padding: 40px; box-sizing: border-box; }
+        .tp-modernist .main { width: 65%; padding: 60px; box-sizing: border-box; }
+
+        /* Template 2: Executive (Full Width) */
+        .tp-executive { flex-direction: column !important; padding: 60px 80px !important; }
+        .tp-executive .header { border-bottom: 4px solid #000; padding-bottom: 20px; margin-bottom: 40px; text-align: center; }
+
+        /* Image Mask Logic */
+        .photo-container { 
+            width: 140px; height: 140px; border-radius: 50%; overflow: hidden; 
+            border: 4px solid rgba(255,255,255,0.2); margin: 0 auto 20px; cursor: pointer; position: relative;
         }
-        .image-picker-container:hover #profile-mask { border-color: rgba(255,255,255,0.6); }
-        
-        .upload-hint {
-            position: absolute;
-            bottom: 0; right: 0;
-            background: rgba(0,0,0,0.7);
-            color: #fff;
-            font-size: 10px;
-            padding: 4px 10px;
-            border-radius: 10px;
-            opacity: 0; transition: opacity 0.2s ease;
+        .photo-container img { width: 100%; height: 100%; object-fit: cover; }
+        .photo-overlay { 
+            position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.6); 
+            color: #fff; font-size: 10px; text-align: center; padding: 5px 0; opacity: 0; transition: 0.3s;
         }
-        .image-picker-container:hover .upload-hint { opacity: 1; }
+        .photo-container:hover .photo-overlay { opacity: 1; }
 
-        /* Real file input hidden */
-        #hidden-file-input { display: none; }
-
-        .sidebar h2 { font-family: 'League Spartan', sans-serif; font-weight: 300; font-size: 10px; text-transform: uppercase; letter-spacing: 4px; color: rgba(255,255,255,0.6); margin: 0 0 20px 0; text-align: center;}
-        
-        .contact-entry { font-size: 13px; text-align: center; margin: 0 0 12px 0; font-weight: 300; color: rgba(255,255,255,0.8);}
-
-        /* Modern Skill Tags */
-        .skills-pills { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 10px; }
-        .skill-tag { 
-            font-size: 11px; 
-            background: rgba(255,255,255,0.1); 
-            color: #fff;
-            padding: 7px 14px; 
-            border-radius: 20px; 
-            font-weight: 300;
-            white-space: nowrap;
-        }
-
-        /* --- Main Content Area --- */
-        .main-content {
-            width: 68%;
-            padding: 80px 60px;
-            box-sizing: border-box;
-        }
-
-        .header-section { margin-bottom: 60px; }
-        .header-section h1 { font-family: 'Playfair Display', serif; font-size: 50px; margin: 0; color: var(--black); font-weight: 700; letter-spacing: -1.5px;}
-        .header-section p { font-family: 'League Spartan', sans-serif; font-size: 14px; text-transform: uppercase; letter-spacing: 5px; color: var(--accent); margin: 10px 0 0 0; font-weight: 600;}
-
-        .section { margin-bottom: 50px; }
-        .main-content h2 { font-family: 'League Spartan', sans-serif; font-size: 11px; text-transform: uppercase; letter-spacing: 4px; color: var(--text-muted); margin: 0 0 30px 0; border-bottom: 1px solid #eee; padding-bottom: 10px;}
-        
-        .entry { margin-bottom: 35px; }
-        .entry-head { font-weight: 600; display: flex; justify-content: space-between; font-size: 15px; margin-bottom: 3px;}
-        .entry-sub { font-style: italic; color: var(--text-muted); font-size: 13px; margin-bottom: 12px; }
-        .entry-desc { font-size: 13.5px; line-height: 1.8; color: var(--text-main); margin: 0; padding-left: 15px;}
-        .entry-desc li { margin-bottom: 6px; }
-
-        @media print {
-            body { background: none; }
-            .toolbar { display: none; }
-            #resume-paper { box-shadow: none; margin: 0; width: 100%; }
-        }
+        input[type="file"] { display: none; }
     </style>
 </head>
 <body>
 
-    <div class="toolbar no-print">
-        <div class="brand">AETHERCORE <span>PRIME_FORGE_V4</span></div>
-        <div class="controls">
-            <button class="btn-export" onclick="exportPDF()">Export PDF</button>
+    <div class="dashboard" id="dashboard">
+        <h1>Aethercore Resume Studio</h1>
+        <div class="template-grid">
+            <div class="template-card" onclick="openEditor('tp-modernist')">
+                <div style="height:200px; background:linear-gradient(90deg, #1a1a2e 35%, #fff 35%);"></div>
+                <p>The Modernist</p>
+            </div>
+            <div class="template-card" onclick="openEditor('tp-executive')">
+                <div style="height:200px; background:#fff; border:1px solid #eee;">
+                    <div style="margin:20px; border-bottom:3px solid #000; height:30px;"></div>
+                </div>
+                <p>The Executive</p>
+            </div>
         </div>
     </div>
 
-    <div id="resume-container">
-        <div id="resume-paper" class="sideline-theme">
-            
-            <div class="sidebar">
-                
-                <div class="image-picker-container" onclick="openFilePicker()" title="Tap to upload image from your phone">
-                    <div id="profile-mask"></div>
-                    <div class="upload-hint">Replace</div>
+    <div class="editor-view" id="editor-view">
+        <div class="toolbar">
+            <button class="btn btn-back" onclick="closeEditor()">← Gallery</button>
+            <div class="logo" style="font-family:'League Spartan'; font-weight:800;">AETHERCORE</div>
+            <button class="btn btn-save" onclick="downloadPDF()">Download PDF</button>
+        </div>
+
+        <input type="file" id="imageInput" accept="image/*" onchange="handleImage(event)">
+
+        <div id="resume-paper" class="tp-modernist">
+            <div class="sidebar" id="sidebar-bg">
+                <div class="photo-container" onclick="document.getElementById('imageInput').click()">
+                    <img id="user-photo" src="https://via.placeholder.com/150" alt="Profile">
+                    <div class="photo-overlay">EDIT PHOTO</div>
                 </div>
-                <input type="file" id="hidden-file-input" accept="image/*" onchange="applyNewImage(event)">
-
-                <section class="sidebar-section">
-                    <h2>Connect</h2>
-                    <p class="contact-entry" contenteditable="true">j.sterling@aethercore.io</p>
-                    <p class="contact-entry" contenteditable="true">+1 555 010 9988</p>
-                    <p class="contact-entry" contenteditable="true">github.com/aethercore</p>
-                    <p class="contact-entry" contenteditable="true">San Francisco, CA</p>
-                </section>
-
-                <section class="sidebar-section" style="margin-top: 50px;">
-                    <h2>Expertise</h2>
-                    <div class="skills-pills">
-                        <div class="skill-tag" contenteditable="true">UI/UX Architecture</div>
-                        <div class="skill-tag" contenteditable="true">TypeScript</div>
-                        <div class="skill-tag" contenteditable="true">3D Physics</div>
-                        <div class="skill-tag" contenteditable="true">React/Next.js</div>
-                        <div class="skill-tag" contenteditable="true">Product Strategy</div>
-                    </div>
-                </section>
+                <h2 contenteditable="true" style="font-size:12px; letter-spacing:3px; color:#aaa; text-align:center;">CONTACT</h2>
+                <p contenteditable="true" style="font-size:13px; text-align:center; opacity:0.8;">yourname@email.com<br>+1 555 0123</p>
             </div>
 
-            <div class="main-content">
-                <header class="header-section">
-                    <h1 contenteditable="true">Julian Sterling</h1>
-                    <p contenteditable="true">Lead Product Creator</p>
-                </header>
-
-                <section class="section">
-                    <h2>Professional Profile</h2>
-                    <p contenteditable="true" style="font-size: 14.5px; line-height: 1.9; color: var(--text-main);">A results-driven Product Creator with over 8 years specializing in high-fidelity digital tools and immersive simulation physics. Expert at bridging architectural aesthetics with complex engineering requirements for corporate stakeholders.</p>
-                </section>
-
-                <section class="section" style="margin-top: 50px;">
-                    <h2>Experience</h2>
-                    
-                    <div class="entry">
-                        <div class="entry-head">
-                            <span contenteditable="true">Senior Solutions Architect</span>
-                            <span contenteditable="true">2023 — Present</span>
-                        </div>
-                        <div class="entry-sub" contenteditable="true">Aethercore Interactive | remote</div>
-                        <ul class="entry-desc">
-                            <li contenteditable="true">Led development of core document utility engines focusing on zero-loss asset quality.</li>
-                            <li contenteditable="true">Architected real-time physics integration for mobile simulation titles.</li>
-                        </ul>
-                    </div>
-
-                    <div class="entry">
-                        <div class="entry-head">
-                            <span contenteditable="true">Web Systems Engineer</span>
-                            <span contenteditable="true">2021 — 2023</span>
-                        </div>
-                        <div class="entry-sub" contenteditable="true">Digital Frontier Labs</div>
-                        <ul class="entry-desc">
-                            <li contenteditable="true">Standardized internal design systems across distributed engineering teams.</li>
-                            <li contenteditable="true">Optimized GitHub CI/CD workflows for high-availability enterprise applications.</li>
-                        </ul>
-                    </div>
-                </section>
+            <div class="main">
+                <h1 contenteditable="true" id="user-name">Your Name</h1>
+                <p contenteditable="true" style="letter-spacing:5px; color:#666; text-transform:uppercase; font-size:12px;">Professional Title</p>
+                <hr style="margin:30px 0; border:0; border-top:1px solid #eee;">
+                
+                <h2 contenteditable="true" style="font-size:11px; letter-spacing:2px; color:#999;">EXPERIENCE</h2>
+                <div class="entry">
+                    <b contenteditable="true">Job Title</b> | <i contenteditable="true">Company Name</i>
+                    <p contenteditable="true" style="font-size:14px; line-height:1.6;">Describe your high-impact achievements here. Click to edit any text.</p>
+                </div>
             </div>
-
         </div>
     </div>
 
     <script>
-        // --- 1. Mobile-Friendly Image Picker Logic ---
-        
-        function openFilePicker() {
-            // Triggers the hidden file input when the profile circle is tapped
-            document.getElementById('hidden-file-input').click();
-        }
+        const dashboard = document.getElementById('dashboard');
+        const editor = document.getElementById('editor-view');
+        const paper = document.getElementById('resume-paper');
 
-        function applyNewImage(event) {
-            const input = event.target;
-            const mask = document.getElementById('profile-mask');
-
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-
-                reader.onload = function(e) {
-                    // Update the circular mask's background image instantly.
-                    // The CSS "background-size: cover" handles the auto-crop and mask.
-                    mask.style.backgroundImage = `url('${e.target.result}')`;
-                };
-
-                reader.readAsDataURL(input.files[0]);
+        function openEditor(templateClass) {
+            dashboard.style.display = 'none';
+            editor.style.display = 'flex';
+            paper.className = templateClass;
+            
+            // Adjust sidebar color if Executive
+            if(templateClass === 'tp-executive') {
+                document.getElementById('sidebar-bg').style.display = 'none';
+                paper.style.padding = "60px";
+            } else {
+                document.getElementById('sidebar-bg').style.display = 'block';
+                paper.style.padding = "0";
             }
         }
 
-        // --- 2. High-Quality Canva-Like PDF Export ---
+        function closeEditor() {
+            dashboard.style.display = 'block';
+            editor.style.display = 'none';
+        }
 
-        function exportPDF() {
-            const element = document.getElementById('resume-paper');
-            const btn = document.querySelector('.btn-export');
-            
-            btn.innerHTML = "Processing...";
-            btn.style.opacity = "0.5";
+        function handleImage(event) {
+            const reader = new FileReader();
+            reader.onload = function() {
+                const output = document.getElementById('user-photo');
+                output.src = reader.result;
+            }
+            reader.readAsDataURL(event.target.files[0]);
+        }
+
+        function downloadPDF() {
+            const btn = document.querySelector('.btn-save');
+            btn.innerHTML = "Generating...";
             
             const options = {
                 margin: 0,
-                filename: 'Premium_Resume.pdf',
-                image: { type: 'jpeg', quality: 1.0 }, // Maximum image quality
-                html2canvas: { 
-                    scale: 4, // Ultra-high resolution (Standard for Canva prints)
-                    useCORS: true, 
-                    letterRendering: true // Crisp typography
-                },
+                filename: 'My_Resume.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 3, useCORS: true },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            // Temporary hide toolbar elements from the PDF capture
-            const toolbar = document.querySelector('.toolbar');
-            toolbar.style.display = 'none';
-
-            html2pdf().set(options).from(element).save().then(() => {
-                // Restore toolbar and button state
-                btn.innerHTML = "Export PDF";
-                btn.style.opacity = "1";
-                toolbar.style.display = 'flex';
-            }).catch(err => {
-                btn.innerHTML = "Error!";
-                btn.style.opacity = "1";
-                toolbar.style.display = 'flex';
-                console.error("PDF Export failed:", err);
+            html2pdf().set(options).from(paper).save().then(() => {
+                btn.innerHTML = "Download PDF";
             });
         }
     </script>
