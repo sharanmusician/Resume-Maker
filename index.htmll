@@ -3,220 +3,191 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Executive Resume | Creator</title>
+    <title>Page Forge | Resume Engine</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <style>
         :root {
-            --bg-color: #ffffff;
-            --accent: #000000;
-            --text-main: #1a1a1a;
-            --text-muted: #666666;
-            --border: #e5e5e5;
+            --accent: #000;
+            --bg-ui: #f8f9fa;
+            --shadow: 0 10px 40px rgba(0,0,0,0.1);
         }
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f4f4f7;
+            background-color: var(--bg-ui);
             margin: 0;
-            padding: 40px 20px;
-            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        /* Resume Page Container */
-        .resume-page {
-            width: 210mm;
-            min-height: 297mm;
-            margin: 0 auto;
-            background: var(--bg-color);
-            padding: 50px;
-            box-sizing: border-box;
-            position: relative;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-
-        /* Controls (Floating UI) */
-        .controls {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-        }
-
-        .btn-download {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            font-weight: 600;
-            cursor: pointer;
-            border-radius: 4px;
-            transition: opacity 0.2s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 12px;
-        }
-
-        .btn-download:hover { opacity: 0.8; }
-
-        /* Resume Content Styling */
-        header {
+        /* Toolbar */
+        .toolbar {
+            width: 100%;
+            padding: 15px 40px;
+            background: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 2px solid var(--accent);
-            padding-bottom: 30px;
-            margin-bottom: 40px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
-        .name-title h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: 32px;
-            margin: 0;
-            text-transform: uppercase;
-        }
-
-        .name-title p {
-            font-size: 14px;
-            letter-spacing: 3px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            margin: 5px 0 0 0;
-        }
-
-        .profile-img {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            object-fit: cover;
-            background: #eee;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 240px;
-            gap: 50px;
-        }
-
-        h2 {
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 8px;
-            margin-bottom: 20px;
-        }
-
-        .section { margin-bottom: 35px; }
-
-        .entry { margin-bottom: 20px; }
-        .entry-head { display: flex; justify-content: space-between; font-weight: 600; font-size: 14px; }
-        .entry-sub { font-style: italic; color: var(--text-muted); font-size: 13px; margin-bottom: 8px; }
+        .logo { font-family: 'Playfair Display', serif; font-weight: bold; font-size: 1.2rem; }
         
-        ul { padding-left: 18px; margin: 0; }
-        li { font-size: 13px; margin-bottom: 5px; color: #333; }
+        .controls { display: flex; gap: 15px; }
 
-        .sidebar-item { margin-bottom: 25px; font-size: 13px; }
-        .skill-pill {
-            display: inline-block;
-            background: #f0f0f0;
-            padding: 4px 10px;
-            margin: 0 4px 6px 0;
-            border-radius: 2px;
-            font-size: 11px;
+        button {
+            padding: 10px 20px;
+            border: 1px solid #ddd;
+            background: #fff;
+            cursor: pointer;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.2s;
         }
 
-        /* Hide elements during PDF generation */
-        .no-print { display: block; }
+        button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+        button.download { background: #1a73e8; color: #fff; border: none; font-weight: bold; }
+
+        /* Resume Canvas */
+        #resume-canvas {
+            margin: 40px 0;
+            width: 210mm;
+            min-height: 297mm;
+            background: #fff;
+            padding: 50px;
+            box-shadow: var(--shadow);
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        /* --- Template 1: The Executive --- */
+        .tmpl-executive .header { border-bottom: 3px solid #000; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
+        .tmpl-executive .main-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 40px; }
+        
+        /* --- Template 2: The Architect --- */
+        .tmpl-architect { padding: 80px !important; }
+        .tmpl-architect .header { text-align: left; margin-bottom: 60px; }
+        .tmpl-architect .header h1 { font-size: 3rem; letter-spacing: -2px; }
+        .tmpl-architect .main-grid { display: block; }
+        .tmpl-architect .section { margin-bottom: 50px; border-left: 2px solid #eee; padding-left: 30px; }
+
+        /* Shared Editable Styles */
+        [contenteditable="true"]:hover { background: #fffde7; outline: 1px dashed #ccc; }
+        h1 { font-family: 'Playfair Display', serif; margin: 0; }
+        h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 20px; color: #666; }
+        .entry { margin-bottom: 20px; }
+        .entry-title { font-weight: 600; display: flex; justify-content: space-between; }
+        .sub { color: #888; font-style: italic; font-size: 14px; }
+        
+        .profile-img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; }
     </style>
 </head>
 <body>
 
-    <div class="controls">
-        <button class="btn-download" onclick="generatePDF()">Download PDF</button>
+    <div class="toolbar">
+        <div class="logo">PAGE FORGE <span style="font-weight: 300; font-size: 0.8rem;">by Aethercore</span></div>
+        <div class="controls">
+            <button id="btn-exec" class="active" onclick="setTemplate('executive')">The Executive</button>
+            <button id="btn-arch" onclick="setTemplate('architect')">The Architect</button>
+            <button class="download" onclick="download()">Download PDF</button>
+        </div>
     </div>
 
-    <div id="resume-content" class="resume-page">
-        
-        <header>
-            <div class="name-title">
-                <h1 contenteditable="true">Your Name</h1>
-                <p contenteditable="true">Executive Professional Title</p>
+    <div id="resume-canvas" class="tmpl-executive">
+        <div class="header">
+            <div>
+                <h1 contenteditable="true">Julian Sterling</h1>
+                <p contenteditable="true" style="letter-spacing: 2px; color: #666; text-transform: uppercase;">Lead Product Developer</p>
             </div>
-            <img src="https://via.placeholder.com/150" alt="Profile" class="profile-img">
-        </header>
+            <img src="https://via.placeholder.com/150" class="profile-img" alt="Profile">
+        </div>
 
-        <div class="grid">
-            <div class="main">
-                <section class="section">
-                    <h2>Professional Profile</h2>
-                    <p contenteditable="true" style="font-size: 14px;">
-                        Brief, high-impact summary of your career. Focus on architectural precision, results, and premium delivery standards. Edit this text directly in your browser.
-                    </p>
-                </section>
-
-                <section class="section">
+        <div class="main-grid">
+            <div class="left-col">
+                <div class="section">
                     <h2>Experience</h2>
                     <div class="entry">
-                        <div class="entry-head">
-                            <span contenteditable="true">Senior Product Creator</span>
-                            <span contenteditable="true">2022 — Present</span>
+                        <div class="entry-title">
+                            <span contenteditable="true">Senior Systems Engineer</span>
+                            <span contenteditable="true">2023 — Present</span>
                         </div>
-                        <div class="entry-sub" contenteditable="true">Aethercore Interactive | Portfolio</div>
-                        <ul>
-                            <li contenteditable="true">Led development of high-end utility applications with minimalist UI.</li>
-                            <li contenteditable="true">Optimized performance for 3D physics engines in mobile environments.</li>
-                        </ul>
+                        <div class="sub" contenteditable="true">Aethercore Interactive</div>
+                        <p contenteditable="true" style="font-size: 14px;">Led the development of architectural-grade web tools and high-performance physics engines for mobile sports games.</p>
                     </div>
-
+                    
                     <div class="entry">
-                        <div class="entry-head">
-                            <span contenteditable="true">Systems Developer</span>
-                            <span contenteditable="true">2019 — 2022</span>
+                        <div class="entry-title">
+                            <span contenteditable="true">UI/UX Developer</span>
+                            <span contenteditable="true">2020 — 2023</span>
                         </div>
-                        <div class="entry-sub" contenteditable="true">Previous Global Tech Corp</div>
-                        <ul>
-                            <li contenteditable="true">Managed Git repositories for large-scale corporate deployments.</li>
-                            <li contenteditable="true">Implemented architectural UI standards across web platforms.</li>
-                        </ul>
+                        <div class="sub" contenteditable="true">Creative Solutions Lab</div>
+                        <p contenteditable="true" style="font-size: 14px;">Focused on minimalist, premium design interfaces for corporate fintech clients.</p>
                     </div>
-                </section>
+                </div>
+
+                <div class="section">
+                    <h2>Education</h2>
+                    <div class="entry">
+                        <div class="entry-title">
+                            <span contenteditable="true">B.S. Computer Science</span>
+                            <span contenteditable="true">2016 — 2020</span>
+                        </div>
+                        <div class="sub" contenteditable="true">University of Design & Tech</div>
+                    </div>
+                </div>
             </div>
 
-            <div class="sidebar">
-                <section class="sidebar-item">
+            <div class="right-col">
+                <div class="section">
                     <h2>Contact</h2>
-                    <div contenteditable="true">email@example.com</div>
-                    <div contenteditable="true">+1 234 567 890</div>
-                    <div contenteditable="true">github.com/yourprofile</div>
-                    <div contenteditable="true">Location: City, Country</div>
-                </section>
-
-                <section class="sidebar-item">
+                    <p contenteditable="true" style="font-size: 13px;">j.sterling@example.com<br>+1 800 555 0199<br>github.com/aether-dev</p>
+                </div>
+                <div class="section">
                     <h2>Expertise</h2>
-                    <div class="skill-pill" contenteditable="true">UI/UX Design</div>
-                    <div class="skill-pill" contenteditable="true">Architecture</div>
-                    <div class="skill-pill" contenteditable="true">React/Node</div>
-                    <div class="skill-pill" contenteditable="true">3D Engines</div>
-                    <div class="skill-pill" contenteditable="true">Product Strategy</div>
-                </section>
+                    <p contenteditable="true" style="font-size: 13px; line-height: 2;">
+                        TypeScript / React<br>
+                        3D Engine Design<br>
+                        Architectural UX<br>
+                        Product Strategy
+                    </p>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        function generatePDF() {
-            const element = document.getElementById('resume-content');
-            const opt = {
-                margin:       0,
-                filename:     'Executive_Resume.pdf',
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
+        function setTemplate(style) {
+            const canvas = document.getElementById('resume-canvas');
+            const btnExec = document.getElementById('btn-exec');
+            const btnArch = document.getElementById('btn-arch');
 
-            // New Promise-based usage:
+            if (style === 'executive') {
+                canvas.className = 'tmpl-executive';
+                btnExec.classList.add('active');
+                btnArch.classList.remove('active');
+            } else {
+                canvas.className = 'tmpl-architect';
+                btnArch.classList.add('active');
+                btnExec.classList.remove('active');
+            }
+        }
+
+        function download() {
+            const element = document.getElementById('resume-canvas');
+            const opt = {
+                margin: 0,
+                filename: 'Premium_Resume.pdf',
+                image: { type: 'jpeg', quality: 1 },
+                html2canvas: { scale: 3, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
             html2pdf().set(opt).from(element).save();
         }
     </script>
