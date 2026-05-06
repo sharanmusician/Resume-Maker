@@ -3,15 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Page Forge | Resume Engine</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <title>Aethercore | Premium Resume Engine</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:wght@700&family=Space+Mono&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <style>
         :root {
             --accent: #000;
-            --bg-ui: #f8f9fa;
-            --shadow: 0 10px 40px rgba(0,0,0,0.1);
+            --bg-ui: #f0f0f2;
+            --white: #ffffff;
+            --border: #e0e0e0;
         }
 
         body {
@@ -21,174 +22,204 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            color: #1a1a1a;
         }
 
-        /* Toolbar */
+        /* Toolbar UI */
         .toolbar {
             width: 100%;
             padding: 15px 40px;
-            background: #fff;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 1px 0px rgba(0,0,0,0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
             position: sticky;
             top: 0;
-            z-index: 100;
+            z-index: 1000;
         }
 
-        .logo { font-family: 'Playfair Display', serif; font-weight: bold; font-size: 1.2rem; }
-        
-        .controls { display: flex; gap: 15px; }
+        .brand { font-family: 'Playfair Display', serif; font-weight: bold; font-size: 1.1rem; letter-spacing: 1px; }
+        .brand span { font-family: 'Space Mono', monospace; font-size: 0.7rem; color: #888; margin-left: 10px; }
 
-        button {
-            padding: 10px 20px;
-            border: 1px solid #ddd;
-            background: #fff;
+        .controls { display: flex; gap: 10px; }
+
+        .btn {
+            padding: 8px 16px;
+            border: 1px solid var(--border);
+            background: var(--white);
             cursor: pointer;
-            font-size: 12px;
+            font-size: 11px;
+            font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 1px;
-            transition: all 0.2s;
+            transition: 0.2s;
         }
 
-        button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-        button.download { background: #1a73e8; color: #fff; border: none; font-weight: bold; }
+        .btn:hover { border-color: #000; }
+        .btn.active { background: #000; color: #fff; border-color: #000; }
+        .btn-download { background: #000; color: #fff; border: none; padding: 10px 20px; }
 
-        /* Resume Canvas */
+        /* Resume Container */
+        #resume-wrap {
+            margin: 50px 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
         #resume-canvas {
-            margin: 40px 0;
             width: 210mm;
             min-height: 297mm;
-            background: #fff;
-            padding: 50px;
-            box-shadow: var(--shadow);
+            background: var(--white);
+            padding: 50px 60px;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.08);
             box-sizing: border-box;
-            transition: all 0.3s ease;
+            position: relative;
         }
 
-        /* --- Template 1: The Executive --- */
-        .tmpl-executive .header { border-bottom: 3px solid #000; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
-        .tmpl-executive .main-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 40px; }
+        /* Shared Editor Styles */
+        [contenteditable="true"] { transition: background 0.3s; padding: 2px; border-radius: 2px; }
+        [contenteditable="true"]:focus { background: #f9f9f9; outline: 1px solid #ddd; }
         
-        /* --- Template 2: The Architect --- */
-        .tmpl-architect { padding: 80px !important; }
-        .tmpl-architect .header { text-align: left; margin-bottom: 60px; }
-        .tmpl-architect .header h1 { font-size: 3rem; letter-spacing: -2px; }
-        .tmpl-architect .main-grid { display: block; }
-        .tmpl-architect .section { margin-bottom: 50px; border-left: 2px solid #eee; padding-left: 30px; }
+        h1 { font-family: 'Playfair Display', serif; font-size: 38px; margin: 0; text-transform: uppercase; line-height: 1; }
+        h2 { font-size: 11px; text-transform: uppercase; letter-spacing: 3px; color: #888; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
 
-        /* Shared Editable Styles */
-        [contenteditable="true"]:hover { background: #fffde7; outline: 1px dashed #ccc; }
-        h1 { font-family: 'Playfair Display', serif; margin: 0; }
-        h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 20px; color: #666; }
-        .entry { margin-bottom: 20px; }
-        .entry-title { font-weight: 600; display: flex; justify-content: space-between; }
-        .sub { color: #888; font-style: italic; font-size: 14px; }
-        
-        .profile-img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; }
+        .profile-img { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; filter: grayscale(1); }
+
+        /* Template: THE EXECUTIVE */
+        .executive .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 50px; border-bottom: 3px solid #000; padding-bottom: 30px; }
+        .executive .main-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 50px; }
+
+        /* Template: THE ARCHITECT (Minimalist Editorial) */
+        .architect { padding: 90px !important; }
+        .architect .header { text-align: left; margin-bottom: 80px; }
+        .architect .header h1 { font-size: 55px; letter-spacing: -2px; }
+        .architect .main-grid { display: block; }
+        .architect .section { margin-bottom: 60px; }
+        .architect .profile-img { position: absolute; top: 90px; right: 90px; width: 80px; height: 80px; }
+
+        /* Content Blocks */
+        .entry { margin-bottom: 25px; }
+        .entry-title { font-weight: 600; display: flex; justify-content: space-between; font-size: 14px; }
+        .entry-sub { font-style: italic; color: #666; font-size: 13px; margin-bottom: 8px; }
+        .entry-desc { font-size: 13px; line-height: 1.6; color: #333; margin: 0; }
+
+        @media screen and (max-width: 210mm) {
+            #resume-canvas { width: 95vw; height: auto; padding: 20px; }
+            .toolbar { flex-direction: column; gap: 15px; }
+        }
     </style>
 </head>
 <body>
 
     <div class="toolbar">
-        <div class="logo">PAGE FORGE <span style="font-weight: 300; font-size: 0.8rem;">by Aethercore</span></div>
+        <div class="brand">AETHERCORE <span>RESUME_FORGE_V1</span></div>
         <div class="controls">
-            <button id="btn-exec" class="active" onclick="setTemplate('executive')">The Executive</button>
-            <button id="btn-arch" onclick="setTemplate('architect')">The Architect</button>
-            <button class="download" onclick="download()">Download PDF</button>
+            <button id="btn-exec" class="btn active" onclick="setTemplate('executive')">The Executive</button>
+            <button id="btn-arch" class="btn" onclick="setTemplate('architect')">The Architect</button>
+            <button class="btn btn-download" onclick="downloadPDF()">Export PDF</button>
         </div>
     </div>
 
-    <div id="resume-canvas" class="tmpl-executive">
-        <div class="header">
-            <div>
-                <h1 contenteditable="true">Julian Sterling</h1>
-                <p contenteditable="true" style="letter-spacing: 2px; color: #666; text-transform: uppercase;">Lead Product Developer</p>
-            </div>
-            <img src="https://via.placeholder.com/150" class="profile-img" alt="Profile">
-        </div>
-
-        <div class="main-grid">
-            <div class="left-col">
-                <div class="section">
-                    <h2>Experience</h2>
-                    <div class="entry">
-                        <div class="entry-title">
-                            <span contenteditable="true">Senior Systems Engineer</span>
-                            <span contenteditable="true">2023 — Present</span>
-                        </div>
-                        <div class="sub" contenteditable="true">Aethercore Interactive</div>
-                        <p contenteditable="true" style="font-size: 14px;">Led the development of architectural-grade web tools and high-performance physics engines for mobile sports games.</p>
-                    </div>
-                    
-                    <div class="entry">
-                        <div class="entry-title">
-                            <span contenteditable="true">UI/UX Developer</span>
-                            <span contenteditable="true">2020 — 2023</span>
-                        </div>
-                        <div class="sub" contenteditable="true">Creative Solutions Lab</div>
-                        <p contenteditable="true" style="font-size: 14px;">Focused on minimalist, premium design interfaces for corporate fintech clients.</p>
-                    </div>
+    <div id="resume-wrap">
+        <div id="resume-canvas" class="executive">
+            <div class="header">
+                <div>
+                    <h1 contenteditable="true">Julian Sterling</h1>
+                    <p contenteditable="true" style="letter-spacing: 4px; color: #666; text-transform: uppercase; font-size: 12px; margin-top: 10px;">Product Creator & Lead Developer</p>
                 </div>
-
-                <div class="section">
-                    <h2>Education</h2>
-                    <div class="entry">
-                        <div class="entry-title">
-                            <span contenteditable="true">B.S. Computer Science</span>
-                            <span contenteditable="true">2016 — 2020</span>
-                        </div>
-                        <div class="sub" contenteditable="true">University of Design & Tech</div>
-                    </div>
-                </div>
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200" class="profile-img" alt="Profile" onclick="alert('To change image: Edit the src URL in the code.')">
             </div>
 
-            <div class="right-col">
-                <div class="section">
-                    <h2>Contact</h2>
-                    <p contenteditable="true" style="font-size: 13px;">j.sterling@example.com<br>+1 800 555 0199<br>github.com/aether-dev</p>
+            <div class="main-grid">
+                <div class="left-col">
+                    <section class="section">
+                        <h2>Experience</h2>
+                        <div class="entry">
+                            <div class="entry-title">
+                                <span contenteditable="true">Senior Product Engineer</span>
+                                <span contenteditable="true">2023 — Present</span>
+                            </div>
+                            <div class="entry-sub" contenteditable="true">Aethercore Interactive | remote</div>
+                            <p class="entry-desc" contenteditable="true">Developed high-fidelity web utilities like "Page Forge" with an emphasis on architectural UI/UX. Optimized 3D simulation physics for mobile sports titles.</p>
+                        </div>
+                        
+                        <div class="entry">
+                            <div class="entry-title">
+                                <span contenteditable="true">Full Stack Developer</span>
+                                <span contenteditable="true">2020 — 2023</span>
+                            </div>
+                            <div class="entry-sub" contenteditable="true">Digital Frontier Systems</div>
+                            <p class="entry-desc" contenteditable="true">Standardized corporate design systems across international teams. Managed GitHub deployments for high-traffic financial applications.</p>
+                        </div>
+                    </section>
                 </div>
-                <div class="section">
-                    <h2>Expertise</h2>
-                    <p contenteditable="true" style="font-size: 13px; line-height: 2;">
-                        TypeScript / React<br>
-                        3D Engine Design<br>
-                        Architectural UX<br>
-                        Product Strategy
-                    </p>
+
+                <div class="right-col">
+                    <section class="section">
+                        <h2>Contact</h2>
+                        <p contenteditable="true" style="font-size: 13px; line-height: 1.8;">
+                            j.sterling@aethercore.io<br>
+                            +1 555 010 9988<br>
+                            github.com/aethercore
+                        </p>
+                    </section>
+                    <section class="section">
+                        <h2>Expertise</h2>
+                        <p contenteditable="true" style="font-size: 13px; line-height: 2;">
+                            • Architectural UI/UX<br>
+                            • React / TypeScript<br>
+                            • 3D Engine Physics<br>
+                            • GitHub Workflow Ops
+                        </p>
+                    </section>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        // Fix: Ensure template switching updates UI buttons correctly
         function setTemplate(style) {
             const canvas = document.getElementById('resume-canvas');
             const btnExec = document.getElementById('btn-exec');
             const btnArch = document.getElementById('btn-arch');
 
             if (style === 'executive') {
-                canvas.className = 'tmpl-executive';
+                canvas.className = 'executive';
                 btnExec.classList.add('active');
                 btnArch.classList.remove('active');
             } else {
-                canvas.className = 'tmpl-architect';
+                canvas.className = 'architect';
                 btnArch.classList.add('active');
                 btnExec.classList.remove('active');
             }
         }
 
-        function download() {
+        // Fix: High-Quality Export Settings
+        function downloadPDF() {
             const element = document.getElementById('resume-canvas');
             const opt = {
                 margin: 0,
-                filename: 'Premium_Resume.pdf',
-                image: { type: 'jpeg', quality: 1 },
-                html2canvas: { scale: 3, useCORS: true },
+                filename: 'Aethercore_Resume_Export.pdf',
+                image: { type: 'jpeg', quality: 1.0 },
+                html2canvas: { 
+                    scale: 4, // High resolution for premium printing
+                    useCORS: true, 
+                    letterRendering: true 
+                },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
-            html2pdf().set(opt).from(element).save();
+            
+            // Temporary UI feedback
+            const btn = document.querySelector('.btn-download');
+            btn.innerHTML = "Generating...";
+            
+            html2pdf().set(opt).from(element).save().then(() => {
+                btn.innerHTML = "Export PDF";
+            });
         }
     </script>
 </body>
